@@ -19,16 +19,31 @@ namespace ELKExample.Controllers
         }
 
         [HttpGet(Name = "GetWeatherForecast")]
-        public IEnumerable<WeatherForecast> Get()
+        public ActionResult<IEnumerable<WeatherForecast>> Get()
         {
-            _logger.LogInformation("Hello from action");
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            try
             {
-                Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-            })
-            .ToArray();
+                _logger.LogInformation("Hello from action at {time}", DateTime.UtcNow);
+
+                var rng = new Random();
+                if (rng.Next(0, 5) < 2)
+                {
+                    throw new Exception("Oops what happned?");
+                }
+
+                return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+                {
+                    Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+                    TemperatureC = Random.Shared.Next(-20, 55),
+                    Summary = Summaries[Random.Shared.Next(Summaries.Length)]
+                })
+                .ToArray();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Somthing bad happen");
+                return new StatusCodeResult(500);
+            }
         }
     }
 }
